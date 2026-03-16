@@ -1,10 +1,25 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# ============================
+# Experimental Parameters
+# ============================
 
-# -----------------------------
-# Function to read EC-Lab .mpt
-# -----------------------------
+area = 0.65973   # cm^2
+pH = 14          # CHANGE according to your electrolyte
+
+reference = "HgHgO"  # options: "AgAgCl" or "HgHgO"
+
+if reference == "AgAgCl":
+    E0 = 0.197
+elif reference == "HgHgO":
+    E0 = 0.098
+
+
+# ============================
+# Read EC-Lab .mpt
+# ============================
+
 def read_mpt(filepath):
 
     with open(filepath, "r", encoding="latin1") as f:
@@ -28,17 +43,23 @@ def read_mpt(filepath):
     )
 
     data = pd.DataFrame()
-    data["Potential_V"] = pd.to_numeric(df["Ewe/V"], errors="coerce")
-    data["Current_mA"] = pd.to_numeric(df["<I>/mA"], errors="coerce")
+
+    # Potential vs RHE
+    data["E_RHE"] = pd.to_numeric(df["Ewe/V"], errors="coerce") + E0 + 0.059*pH
+
+    # Current density
+    current = pd.to_numeric(df["<I>/mA"], errors="coerce")
+
+    data["j_mA_cm2"] = current / area
 
     data = data.dropna()
 
     return data
 
 
-# -----------------------------
+# ============================
 # File Paths
-# -----------------------------
+# ============================
 
 files = {
 
@@ -59,86 +80,34 @@ files = {
 }
 
 
-# -----------------------------
-# Graph 1 — Bare SS
-# -----------------------------
-
-data = read_mpt(files["Bare SS"])
-
-plt.figure(figsize=(8,6))
-plt.plot(data["Potential_V"], data["Current_mA"], linewidth=1.5)
-
-plt.xlabel("Potential (Ewe / V)")
-plt.ylabel("Current (<I> / mA)")
-plt.title("HER Curve — Bare Stainless Steel")
-
-plt.grid(True)
-plt.tight_layout()
-
-plt.savefig("HER_Bare_SS.png", dpi=300)
-plt.show()
-
-
-# -----------------------------
-# Graph 2 — Modified SS (5 min)
-# -----------------------------
-
-data = read_mpt(files["Modified SS 5 min"])
-
-plt.figure(figsize=(8,6))
-plt.plot(data["Potential_V"], data["Current_mA"], linewidth=1.5)
-
-plt.xlabel("Potential (Ewe / V)")
-plt.ylabel("Current (<I> / mA)")
-plt.title("HER Curve — Modified SS (5 min conditioning)")
-
-plt.grid(True)
-plt.tight_layout()
-
-plt.savefig("HER_Modified_SS_5min.png", dpi=300)
-plt.show()
-
-
-# -----------------------------
-# Graph 3 — Modified SS (7 min)
-# -----------------------------
-
-data = read_mpt(files["Modified SS 7 min"])
-
-plt.figure(figsize=(8,6))
-plt.plot(data["Potential_V"], data["Current_mA"], linewidth=1.5)
-
-plt.xlabel("Potential (Ewe / V)")
-plt.ylabel("Current (<I> / mA)")
-plt.title("HER Curve — Modified SS (7 min conditioning)")
-
-plt.grid(True)
-plt.tight_layout()
-
-plt.savefig("HER_Modified_SS_7min.png", dpi=300)
-plt.show()
-
-
-# -----------------------------
-# Graph 4 — pH Study (comparison)
-# -----------------------------
-
-acid = read_mpt(files["Pt Acid"])
-base = read_mpt(files["Pt Base"])
+# ============================
+# Plot HER curves
+# ============================
 
 plt.figure(figsize=(8,6))
 
-plt.plot(acid["Potential_V"], acid["Current_mA"], label="Pt in Acid", linewidth=1.5)
-plt.plot(base["Potential_V"], base["Current_mA"], label="Pt in Base", linewidth=1.5)
+for name in files:
 
-plt.xlabel("Potential (Ewe / V)")
-plt.ylabel("Current (<I> / mA)")
-plt.title("Effect of pH on HER (Pt Electrode)")
+    data = read_mpt(files[name])
+
+    plt.plot(
+        data["E_RHE"],
+        data["j_mA_cm2"],
+        linewidth=2,
+        label=name
+    )
+
+
+plt.xlabel("E (V vs RHE)", fontsize=13)
+plt.ylabel("j (mA cm$^{-2}$)", fontsize=13)
+
+plt.title("Hydrogen Evolution Reaction (HER)", fontsize=14)
 
 plt.grid(True)
 plt.legend()
 
 plt.tight_layout()
 
-plt.savefig("HER_pH_comparison.png", dpi=300)
+plt.savefig("HER_current_density.png", dpi=300)
+
 plt.show()
