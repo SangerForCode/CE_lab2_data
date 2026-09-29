@@ -18,4 +18,4 @@ Both scripts hard-code an electrode area of 0.65973 cm², pH 14, a Hg/HgO refere
 
 ## Analysis flow
 
-![Component diagram showing EC-Lab files parsed into derived values and then used by plotting and workbook scripts](docs/analysis-flow.png)
+![Component diagram showing EC-Lab files parsed into derived values and then used by plotting and workbook scripts](docs/analysis-flow.svg)
