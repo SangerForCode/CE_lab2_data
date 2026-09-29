@@ -1,0 +1,15 @@
+digraph G {
+ graph [label="CE Lab 2: analysis flow", labelloc=t, fontname="Arial", fontsize=20, bgcolor="white", pad=0.25, rankdir=LR];
+ node [shape=component, fontname="Arial", fontsize=11, style=filled, fillcolor="#eef7f9", color="#39748a", margin="0.13,0.1"];
+ edge [fontname="Arial", fontsize=10, color="#39748a"];
+ mpt [label="EC-Lab .mpt files\nF/HER studies, F/pH study"];
+ reader [label="read_mpt()\nparse Ewe/V, <I>/mA"];
+ calc [label="Derived values\nE vs RHE, current density,\noverpotential"];
+ plot [label="code.py\nplots + Tafel fits"];
+ excel [label="generate_excel.py\nparameters + sheets"];
+ png [label="Four graph PNGs"];
+ xlsx [label="HER_LSV_Final.xlsx"];
+ mpt -> reader -> calc;
+ calc -> plot -> png;
+ calc -> excel -> xlsx;
+}
